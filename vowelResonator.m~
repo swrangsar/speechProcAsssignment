@@ -1,0 +1,53 @@
+function [impulseResponse] = vowelResonator(F1, F2, F3)
+%VOWELRESONATOR Creates a new filter WITH 3 formant frequencies.
+%  VOWELRESONATOR(F1, F2, F3) creates a new transfer function H(z)
+%  for a digital filter with three formants. It uses the input
+%  formant frequencies F1, F2 and F3 to do
+%  this. It also plots the magnitude response (dB magnitude vs frequency)
+%  and impulse response.
+
+switch lower(vowel);
+if vowel == 'a'
+    F1 = 730; F2 =1090; F3 = 2440;
+elseif vowel == 'i'
+    F1 = 270; F2 = 2290; F3 = 3010;
+elseif vowel == 'u'
+    F1 = 
+
+Bw = 100;
+Fs = 16000; % 16 kHz
+poleRadius = exp(-(pi*Bw/Fs));
+poleTheta = 2*pi*F1/Fs;
+pole1 = poleRadius*exp(1i*poleTheta);
+pole2 = poleRadius*exp(-1i*poleTheta);
+
+M = 8000;
+step = 1;
+f = -M:step:M;
+r = 1;
+z = r*exp(1i*2*pi*f/Fs);
+H1 = (z.*z)./((z-pole1+eps).*(z-pole2+eps));
+poleTheta = 2*pi*F2/Fs;
+pole1 = poleRadius*exp(1i*poleTheta);
+pole2 = poleRadius*exp(-1i*poleTheta);
+H2 = (z.*z)./((z-pole1+eps).*(z-pole2+eps));
+poleTheta = 2*pi*F3/Fs;
+pole1 = poleRadius*exp(1i*poleTheta);
+pole2 = poleRadius*exp(-1i*poleTheta);
+H3 = (z.*z)./((z-pole1+eps).*(z-pole2+eps));
+H = H1.*H2.*H3;
+
+
+mag = 20*log10(abs(H));
+figure, plot(f, mag);
+title(['Magnitude plot for F1 = ', num2str(F1), ' Hz, F2 = ', num2str(F2), ' Hz and F3 = ', num2str(F3), ' Hz']);
+xlabel('Frequency (Hz)');
+ylabel('Magnitude (dB)');
+
+impulseResponse = real(ifft(ifftshift(H))); % do ifft on non-centered Fourier transform
+n = 0:1:((M*2)/step);
+t = n/Fs;
+figure, plot(t, impulseResponse);
+title(['Impulse response for F1 = ', num2str(F1), ' Hz, F2 = ', num2str(F2), ' Hz and F3 = ', num2str(F3), ' Hz']);
+xlabel('Time (sec)');
+ylabel('Impulse response h(t)');

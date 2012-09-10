@@ -1,0 +1,39 @@
+function y = hammingVowelFilter(vowel, F0, windowLength)
+%HAMMINGVOWELFILTER Models a vowel filter system based on a given pitch.
+
+Fs = 16000;
+impulseResponse = vowelResonator(vowel);
+impulseResponse = impulseResponse(1:Fs);
+% length(impulseResponse)
+rwindow = zeros(1,Fs);
+T=1/Fs;
+windowPeriod = windowLength/1000;
+M = round(windowPeriod/T);
+for k=1:M
+    rwindow(k) = 0.54-(0.46*(cos(2*pi*)));
+rwindow(1:M) = 1;
+impulseResponse = impulseResponse.*rwindow;
+
+duration = 2;
+step = round(Fs/F0);
+numStep = ceil(duration*Fs/step);
+itlen = (numStep*step);
+impulseTrain = zeros(1,itlen);
+for k = 1:step:itlen
+    impulseTrain(k) = 1;
+end
+y = conv(impulseResponse, impulseTrain, 'same');
+y = y(1:Fs/2);
+n = 0:length(y)-1;
+t = n/Fs;
+figure, plot(t, y);
+title(['Time domain waveform for vowel /', vowel, '/ and F0 = ', num2str(F0)]);
+xlabel('Time (sec)');
+ylabel('Output y(t)');
+sound(y, Fs);
+% the transform
+Y = fftshift(fft(y));
+n = -length(Y)/2:(length(Y)/2)-1;
+freq = n*(Fs/length(Y));
+figure, plot(freq, abs(Y));
+
